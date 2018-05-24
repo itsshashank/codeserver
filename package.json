@@ -1,0 +1,14 @@
+{
+  "name": "codeserver",
+  "version": "1.0.0",
+  "description": "a server that processes requests to execute code",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sandbox"
+  ],
+  "author": "dravog",
+  "license": "MIT"
+}
