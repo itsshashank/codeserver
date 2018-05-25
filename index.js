@@ -10,9 +10,12 @@ function newFunction() {
     'use strict';
 }
 
-function onreq(req)
+function onreq(req,res)
 {
-    //run
+    //run the code
+    //compare code to required result
+    //update db
+    //all async
 }
 
 global.db=require("db.js");
