@@ -1,7 +1,6 @@
-#must run the evaluation code and 
-set -o xtrace
+#TODO
+#before compile check if already exist
 function javaexe(){
-    #javaexe filename
     javac $1
     local file=${1/.java*/}
     echo "java $file"
@@ -43,6 +42,8 @@ case $1 in
         exit
         ;;
     esac
-tmp="<a.txt"
-exe="$execu $tmp"
-time firejail --net=none --private=$(pwd) timeout ${t}s $exe
+for i in $(seq 0 $3)
+do
+    out=$(time firejail --quiet --net=none --private=$4 timeout ${t}s $execu<$i.txt)
+    echo "$out">$i.out
+done

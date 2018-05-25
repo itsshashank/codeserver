@@ -1,23 +1,16 @@
-/*
-executing program
-time firejail --net=none --private=<folder> timeout <time in seconds>s <command to execute>
-
-command to execute depends on language
-python3 -python3 filename
-
-java-
-javac filename.java
-java classname <-this in firejail
-
-c++/c-
-g++ -lm filename /gcc -lm filename
-./a.out <-this in firejail
-*/
 'use strict';
 
 let cli=require("child_process");
 
-exports=function execute(filename,cwd,)
+module.exports.exe=(submission,filename,folder)=>
 {
+    let num=submission.testcases;
+    let lang=submission.lang;
+    let a=cli.spawn("./exe.sh",[lang,filename,num,folder]);
+    a.stdout.on("data",()=>{
 
-}
+    });
+    a.stderr.on("data",()=>{
+
+    });
+};
