@@ -1,32 +1,35 @@
+
+#!/bin/bash
 #TODO
 #before compile check if already exist
-function javaexe(){
+cd $4
+jaexe() {
     javac $1
     local file=${1/.java*/}
     echo "java $file"
 }
 
-function cexe(){
+cexe(){
     gcc -lm $1
     echo "./a.out"
 }
 
-function cppexe(){
+cppexe(){
     g++ -lm $1
     echo "./a.out"
 }
 
-function pythonexe(){
+python3exe(){
     echo "python3 $1"
 }
 
 case $1 in
     java)
-        execu=$(javaexe $2)
+        execu=$(jaexe $2)
         t=4
         ;;
     python3)
-        execu=$(pythonexe $2)
+        execu=$(python3exe $2)
         t=10
         ;;
     cpp)
