@@ -2,11 +2,11 @@
 
 const {Pool} = require('pg');
 const link = new Pool({
-    user: 'dravog',
-    host: 'localhost',
-    database: 'dravog',
-    password: 'lightfighters@7',
-    port: 5432,
+    user: process.env.DBuser,
+    host: process.env.DBhost,
+    database: process.env.DBdatabase,
+    password: process.env.DBpassword,
+    port: process.env.DBport,
   });
 module.exports.getsubmission=(dbid,callback)=>{
     link.query("SELECT * FROM SUBMISSION WHERE DBID="+dbid,(err,res)=>{

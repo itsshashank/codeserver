@@ -12,7 +12,7 @@ function newFunction() {
 
 const fs=require("fs");
 const path=require("path");
-
+require("dotenv").config();
 function onreq(req,res)
 {
     //make new folder in exearea
