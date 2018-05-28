@@ -24,7 +24,7 @@ function mainx(submission)
     if(submission.customin)
     {
         execute(submission,0);
-        assert(submission,0);
+        customin(submission);
     }
     else //submission for a problem
     {
@@ -47,11 +47,21 @@ function setup(submission)
     fs.mkdirSync(submission.folder);//make execution folder
 
     //copy testcases *.txt to execution folder
-    for(let i=0;i<=submission.testcases;i++)
+    if(!submission.customin)
     {
-        let src=path.resolve(submission.qfolder,"./"+i+".txt"); //source loc
-        let dest=path.resolve(submission.folder,"./"+i+".txt"); //destination loc
-        fs.copyFileSync(src,dest);
+        for(let i=0;i<=submission.testcases;i++)
+        {
+            let src=path.resolve(submission.qfolder,"./"+i+".txt"); //source loc
+            let dest=path.resolve(submission.folder,"./"+i+".txt"); //destination loc
+            fs.copyFileSync(src,dest);
+        }
+    }
+    else
+    {
+        //custom input file setup
+        submission.qfolder=null;
+        let src=path.resolve(submission.folder,"./0.txt");
+        fs.writeFileSync(src,submission.input);
     }
     //change folder to execution folder
     process.chdir(submission.folder);
@@ -62,7 +72,7 @@ function setup(submission)
 
     //compile the program
     submission.execom=lang.proc[submission.lang](submission.filename);
-    return submission
+    return submission;
 }
 
 function execute(submission,num)
@@ -86,6 +96,15 @@ function assert(submission,num)
         //console.log("assert eq check");
         global.db.assertdb(submission,num,"1");
     }
+}
+
+function customin(submission)
+{
+    //custom input
+    let num=0;
+    var output=path.resolve(submission.folder,"./"+num+".out");
+    var outStream=fs.readFileSync(output);
+    global.db.customindb(submission,outStream.toString());
 }
 
 function comgen(submission,num)

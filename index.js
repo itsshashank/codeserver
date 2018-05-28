@@ -13,7 +13,7 @@ global.app = express();
 global.url.setup(); //setups the url table
 require("dotenv").config(); //setup environmental variables
 global.db.connect(); //connnect to database
-global.server = app.listen(9102,()=> 
+global.server = app.listen(9101,()=> 
 {
    var host = server.address().address;
    var port = server.address().port;
