@@ -1,68 +1,100 @@
-function cliproc()
-{
-    arr=[]
-    proc={flags:{"q":false},lang:"",file:"",folder:"",testcases:""};
-    len=process.argv.length;
-    for(let i=2;i<len;i++)
-    {
-        p=process.argv[i];
-        if(p[0]=="-")
-            //flag
-            proc.flags[p.substr(1)]=true;
-        else
-            arr.push(p);
-    }
-    proc.lang=arr[0];
-    proc.file=arr[1];
-    if(!proc.flags["q"])
-    {
-        proc.testcases=arr[2];
-        proc.folder=arr[3];
-    }
-    else
-        proc.folder=arr[2];
-    return proc;
-}
+/*
+Excutes and asserts the code
 
-proc=cliproc();
-fs=require("fs");
-cli=require("child_process");
-/*node exe.js lang filename [testcases] folder [flags]
-flags are
--q --if given. evaluates as not a submission for a question. stdout the output
+TO-DO
+handling other errors
+Compilation (by lang.js)
+runtime
+Wrong answer
 */
+'use strict';
+const fs=require("fs");
+const path=require("path");
+const lang=require("./lang.js");
+const cli=require("child_process");
+const directory=__dirname;
 
-lang=require("./lang.js");
-process.chdir(proc.folder);
-excom=lang[proc.lang](proc.file);
-if(!proc.flags.q)
+function mainx(submission)
 {
-    for(let i=0;i<=proc.testcases;i++)
+    //generate folder for execution
+    submission=setup(submission);
+    //execute and assert the output
+
+    // if its custom input
+    if(submission.customin)
     {
-        filename=i+".txt";
-        ex=excom.command+" < "+filename;
-        command="time firejail --quiet --net=none --private="+proc.folder+" timeout "+excom.t+"s "+ex;
-        command=command.split(" ");
-        args=command.slice(1);
-        command=command[0];
-        out=cli.spawnSync(command,args,
-                {"cwd":proc.folder
-            });
-        output=out.output[1].toString();
-        fs.writeFileSync(i+".out",output);
-        //console.log(out.output[2].toString()); //needs to be processed
-        //update db
+        execute(submission,0);
+        assert(submission,0);
+    }
+    else //submission for a problem
+    {
+        for(let i=0;i<=submission.testcases;i++)
+        {
+            //console.log(i+" testcase");
+            execute(submission,i);
+            assert(submission,i);
+        }
+    }
+
+    //reset __dirname
+    process.chdir(directory);
+}
+
+function setup(submission)
+{
+    submission.folder=path.resolve(__dirname,"./exearea/"+submission.dbid);//execution folder
+    submission.qfolder=path.resolve(__dirname,"./problem/"+submission.qid);//question folder
+    fs.mkdirSync(submission.folder);//make execution folder
+
+    //copy testcases *.txt to execution folder
+    for(let i=0;i<=submission.testcases;i++)
+    {
+        let src=path.resolve(submission.qfolder,"./"+i+".txt"); //source loc
+        let dest=path.resolve(submission.folder,"./"+i+".txt"); //destination loc
+        fs.copyFileSync(src,dest);
+    }
+    //change folder to execution folder
+    process.chdir(submission.folder);
+
+    //make the program file
+    submission.filename=lang.file[submission.lang];
+    fs.writeFileSync(submission.filename,submission.program);
+
+    //compile the program
+    submission.execom=lang.proc[submission.lang](submission.filename);
+    return submission
+}
+
+function execute(submission,num)
+{
+    let command=comgen(submission,num);
+    let out=cli.spawnSync(command[0],command.slice(1),{cwd:submission.folder});
+    let output=out.output[1].toString(); //get output
+    fs.writeFileSync(num+".out",output); //write output to .out file
+}
+
+function assert(submission,num)
+{
+    //console.log("assert");
+    var expected=path.resolve(submission.qfolder,"./"+num+".out");
+    var output=path.resolve(submission.folder,"./"+num+".out");
+    var expStream=fs.readFileSync(expected);
+    var outStream=fs.readFileSync(output);
+    if(expStream.equals(outStream))
+    {
+        //output matches expected
+        //console.log("assert eq check");
+        global.db.assertdb(submission,num,"1");
     }
 }
-else
+
+function comgen(submission,num)
 {
-    ex=excom.command+"<0.txt";
-    command="time firejail --quiet --net=none --private="+proc.folder+" timeout "+excom.t+"s "+ex;
+    let filename=num+".txt";
+    let ex=submission.execom.command+" < "+filename;
+    let command="time firejail --quiet --net=none --private="+submission.folder+" timeout "+submission.execom.t+"s "+ex;
     command=command.split(" ");
-        args=command.slice(1);
-        command=command[0];
-        out=cli.spawnSync(command,args,
-                {"cwd":proc.folder
-            });
-        console.log(out.output[1].toString());
+    return command;
 }
+
+module.exports.mainx=mainx;

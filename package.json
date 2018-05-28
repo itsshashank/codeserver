@@ -1,20 +1,21 @@
 {
   "name": "codeserver",
   "version": "1.0.0",
-  "description": "a server that processes requests to execute code",
+  "description": "code submission executor",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/mocha/bin/mocha"
   },
   "keywords": [
-    "sandbox"
+    "codeserver"
   ],
   "author": "dravog",
   "license": "MIT",
   "dependencies": {
+    "chai": "^4.1.2",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
-    "pg": "^7.4.3",
-    "pg-hstore": "^2.3.2"
+    "mocha": "^5.2.0",
+    "pg": "^7.4.3"
   }
 }
