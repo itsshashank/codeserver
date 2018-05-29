@@ -1,0 +1,4 @@
+/*
+Settings file
+(removes .env)
+*/

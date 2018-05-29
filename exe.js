@@ -38,6 +38,7 @@ function mainx(submission)
 
     //reset __dirname
     process.chdir(directory);
+    //delete execution folder
 }
 
 function setup(submission)
@@ -80,6 +81,7 @@ function execute(submission,num)
     let command=comgen(submission,num);
     let out=cli.spawnSync(command[0],command.slice(1),{cwd:submission.folder});
     let output=out.output[1].toString(); //get output
+    gettime(submission,out.output[2].toString(),num);
     fs.writeFileSync(num+".out",output); //write output to .out file
 }
 
@@ -114,6 +116,14 @@ function comgen(submission,num)
     let command="time firejail --quiet --net=none --private="+submission.folder+" timeout "+submission.execom.t+"s "+ex;
     command=command.split(" ");
     return command;
+}
+
+function gettime(submission,err,num)
+{
+    var start=err.indexOf("system")+7;
+    var end=err.indexOf("elapsed");
+    var tim=err.slice(start,end);
+    global.db.updatetime(submission,tim,num);
 }
 
 module.exports.mainx=mainx;

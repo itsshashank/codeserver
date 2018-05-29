@@ -26,6 +26,7 @@ input     text                           the input for custom input
 
 'use strict'
 const {Pool} = require('pg');
+var format=require("pg-format");
 //to run tests as stand alone from terminal
 module.exports.connect=()=>
 {
@@ -43,21 +44,19 @@ module.exports.connect=()=>
 module.exports.makesubmission=(customin,options)=>
 {
     console.log("makesubmission");
-    var arr=[];
-    arr.push(options.qid||-1);
-    arr.push(options.userid||-1); //-1 is customin anonymous
-    arr.push("'"+customin+"'");
-    arr.push(options.testcases || 0);
-    arr.push(options.progress || 0);
-    arr.push("'"+options.lang+"'");
-    arr.push("'"+options.program+"'");
-    arr.push("'"+options.input+"'");
-    return global.link.query("insert into submission(qid,userid,customin,testcases,progress,lang,program,input) values ("+arr.join()+") returning dbid")
-    .catch((err)=>{});
+    var qid=options.qid||-1;
+    var userid=options.userid||-1; //-1 is customin anonymous
+    var testcases=options.testcases || 0;
+    var progress=options.progress || 0;
+    var lang=options.lang;
+    var program=options.program;
+    var input=options.input;
+    return global.link.query(format("insert into submission(qid,userid,customin,testcases,progress,lang,program,input) values (%L,%L,%L,%L,%L,%L,%L,%L) returning dbid",qid,userid,customin,testcases,progress,lang,program,input))
+    .catch((err)=>{console.log(err);});
 }
 module.exports.getsubmission=(dbid,callback)=>
-{
-    return global.link.query("SELECT * FROM SUBMISSION WHERE DBID="+dbid);
+{//X
+    return global.link.query(format("SELECT * FROM SUBMISSION WHERE DBID=%L",dbid));
 }
 
 module.exports.assertdb=(submission,testcase,result)=>
@@ -67,20 +66,28 @@ module.exports.assertdb=(submission,testcase,result)=>
     let m=testcase+":"+result;
     let percent=100/(submission.testcases+1);
     //change the score object according to options
-    global.link.query("update submission set score=array_cat(score,'{"+m+"}'),progress=progress+"+percent+" where dbid="+dbid)
+    global.link.query(format("update submission set score=array_cat(score,'{%s}'),progress=progress+%L where dbid=%L",m,percent,dbid))
     .catch((err)=>{
-        //console.log(err,res);
+        console.log(err,res);
     }); 
 }
 
 module.exports.customindb=(submission,output)=>
 {
     let dbid=submission.dbid;
-    global.link.query("update submission set score='{"+output+"}',progress=100 where dbid="+dbid)
-    .catch((err)=>{});
+    global.link.query(format("update submission set score='{%s}',progress=100 where dbid=%L",output,dbid))
+    .catch((err)=>{console.log(err);});
+}
+module.exports.updatetime=(submission,time,num)=>
+{
+    var m=num+":"+time;
+    let dbid=submission.dbid;
+    global.link.query(format("update submission set time=array_cat(time,'{%s}') where dbid=%L",m,dbid))
+    .catch((err)=>{
+        console.log(err);
+    });
 }
 //clean up
 process.on("exit",()=>{
     global.link.end();
-    global.debug.log("closing database link!");
 });
