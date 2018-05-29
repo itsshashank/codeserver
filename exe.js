@@ -39,6 +39,7 @@ function mainx(submission)
     //reset __dirname
     process.chdir(directory);
     //delete execution folder
+    cli.spawnSync("rm",["-rf",submission.folder]);
 }
 
 function setup(submission)
